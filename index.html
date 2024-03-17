@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="live2dcubismcore.min.js"></script>
+<script src="live2d.min.js"></script>
+<script src="pixi.min.js"></script>
+<script src="index.min.js"></script>
+
+<canvas id="canvas"></canvas>
+
+<script>
+let model; // 声明模型变量
+
+(async function main() {
+  const app = new PIXI.Application({
+    view: document.getElementById("canvas"),
+    autoStart: true,
+    resizeTo: window,
+  });
+
+  try {
+    const cubism4Model = "Umo.model3.json";
+    model = await PIXI.live2d.Live2DModel.from(cubism4Model);
+
+    app.stage.addChild(model);
+
+    // 设置模型初始缩放
+    model.scale.set(0.2221);
+
+    // 设置模型观察点位置
+    model.setViewPoint(0, 0);
+
+    // 计算模型的居中位置
+    const centerX = app.screen.width / 2;
+    const centerY = app.screen.height / 2;
+
+    // 设置模型位置
+    model.position.set(centerX, centerY);
+
+    // 添加鼠标拖动事件监听
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+    app.view.addEventListener('mousedown', (event) => {
+      isDragging = true;
+      const localPosition = model.toLocal(new PIXI.Point(event.clientX, event.clientY));
+      dragStartX = localPosition.x;
+      dragStartY = localPosition.y;
+    });
+
+    app.view.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    app.view.addEventListener('mousemove', (event) => {
+      if (isDragging) {
+        const localPosition = model.toLocal(new PIXI.Point(event.clientX, event.clientY));
+        const deltaX = localPosition.x - dragStartX;
+        const deltaY = localPosition.y - dragStartY;
+
+        model.x += deltaX;
+        model.y += deltaY;
+
+        dragStartX = localPosition.x;
+        dragStartY = localPosition.y;
+
+        model.update();
+      }
+    });
+
+    app.view.addEventListener('wheel', handleMouseWheel);
+    window.addEventListener('resize', handleResize);
+
+    handleResize(); // 初始调整一次大小
+
+  } catch (error) {
+    console.error("Error loading Live2D model:", error);
+  }
+})();
+
+    // 添加鼠标拖动事件监听
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+    app.view.addEventListener('mousedown', (event) => {
+      isDragging = true;
+      const localPosition = model.toLocal(new PIXI.Point(event.clientX, event.clientY));
+      dragStartX = localPosition.x;
+      dragStartY = localPosition.y;
+    });
+
+    app.view.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    app.view.addEventListener('mousemove', (event) => {
+      if (isDragging) {
+        const localPosition = model.toLocal(new PIXI.Point(event.clientX, event.clientY));
+        const deltaX = localPosition.x - dragStartX;
+        const deltaY = localPosition.y - dragStartY;
+
+        model.x += deltaX;
+        model.y += deltaY;
+
+        dragStartX = localPosition.x;
+        dragStartY = localPosition.y;
+
+        model.update();
+      }
+    });
+
+    // 添加鼠标滚轮事件监听
+    app.view.addEventListener('wheel', handleMouseWheel);
+
+    window.addEventListener('resize', handleResize);
+
+try {
+  // ...
+  handleResize(); // 初始调整一次大小
+  // 可以在这里添加其他代码或注释
+} catch (error) {
+  console.error("Error loading Live2D model:", error);
+}
+
+function centerModel() {
+  // 计算画布中心
+  const canvasCenterX = app.renderer.width / 2;
+  const canvasCenterY = app.renderer.height / 2;
+
+  // 计算模型中心
+  const modelCenterX = model.width * model.scale.x / 2;
+  const modelCenterY = model.height * model.scale.y / 2;
+
+  // 移动模型到画布中心
+  model.position.set(canvasCenterX - modelCenterX, canvasCenterY - modelCenterY);
+
+  // 更新模型
+  model.update();
+}
+
+function handleMouseWheel(event) {
+  if (model) {
+    const delta = event.deltaY > 0 ? 1 : -1;
+
+    model.scale.x += delta * 0.1;
+    model.scale.y += delta * 0.1;
+
+    model.scale.x = Math.max(0.1, model.scale.x);
+    model.scale.y = Math.max(0.1, model.scale.y);
+
+    centerModel(); // 调整模型位置，确保在缩放时居中
+
+    model.update();
+  }
+}
+
+function handleResize() {
+  const maxWidth = 1440;
+  const maxHeight = 810;
+  const currentWidth = window.innerWidth;
+  const currentHeight = window.innerHeight;
+
+  let newWidth, newHeight;
+
+  if (currentWidth / currentHeight > maxWidth / maxHeight) {
+    newWidth = maxWidth;
+    newHeight = (maxWidth / currentWidth) * currentHeight;
+  } else {
+    newHeight = maxHeight;
+    newWidth = (maxHeight / currentHeight) * currentWidth;
+  }
+
+  app.renderer.resize(newWidth, newHeight);
+
+  centerModel(); // 调整画布大小后，确保模型仍然居中
+}
+</script>
+</body>
+</html>
